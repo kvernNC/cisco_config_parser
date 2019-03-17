@@ -1,0 +1,36 @@
+---
+- name: parser meta data
+  parser_metadata:
+    version: 1.0
+    command: show running-config
+    network_os: ios
+
+- name: match hostname
+  pattern_match:
+    regex: "!\\nhostname ([^\\n]+)"
+  register: ios_hostname
+  export: yes
+
+- name: match version
+  pattern_match:
+    regex: "^version (\\S+)"
+  register: ios_major_version
+  export: yes
+
+- name: match named standard ACL
+  pattern_match:
+    regex: "ip access-list standard ([^!]+)"
+  register: ios_standard_named_acl
+  export: yes
+
+- name: match named extended ACL
+  pattern_match:
+    regex: "ip access-list extended([^!]+)"
+  register: ios_extended_named_acl
+  export: yes
+
+- name: match numbered standard ACL
+  pattern_match:
+    regex: "!\\naccess-list ([^!]+)"
+  register: ios_numbered_acl
+  export: yes

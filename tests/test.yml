@@ -1,0 +1,5 @@
+---
+- hosts: routers
+  remote_user: root
+  roles:
+    - cisco_config_parser
