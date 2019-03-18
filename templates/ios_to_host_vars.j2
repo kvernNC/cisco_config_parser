@@ -1,0 +1,127 @@
+## Vars file
+---
+{% if ansible_net_hostname.matches is defined and ansible_net_hostname.matches != None and ansible_net_hostname.matches.0 is defined and ansible_net_hostname.matches.0 != None%}
+hostname: {{ansible_net_hostname.matches.0}}
+{% endif %}
+
+{% if ansible_net_model.matches is defined and ansible_net_model.matches != None and ansible_net_model.matches.0 is defined and ansible_net_model.matches.0 != None%}
+model: {{ansible_net_model.matches.0}}
+{% endif %}
+
+{% if ansible_net_version.matches is defined and ansible_net_version.matches != None and ansible_net_version.matches.0 is defined and ansible_net_version.matches.0 != None%}
+version: {{ansible_net_version.matches.0}}
+{% endif %}
+{% if ansible_net_flash.matches is defined and ansible_net_flash.matches != None and ansible_net_flash.matches.0 is defined and ansible_net_flash.matches.0 != None%}
+flash: {{ansible_net_flash.matches.0}}
+{% endif %}
+
+{% if ansible_net_serialnum.matches is defined and ansible_net_serialnum.matches != None and ansible_net_serialnum.matches.0 is defined and ansible_net_serialnum.matches.0 != None%}
+serial: {{ansible_net_serialnum.matches.0}}
+{% endif %}
+
+{% if ansible_net_snmp_location.matches is defined and ansible_net_snmp_location.matches != None and ansible_net_snmp_location.matches.0 is defined and ansible_net_snmp_location.matches.0 != None%}
+location: {{ansible_net_snmp_location.matches.0}}
+{% endif %}
+
+## management ###
+mgmt_interface:
+{% if ansible_net_interfaces is defined and ansible_net_interfaces != None %}
+{% for interfaces in ansible_net_interfaces%}
+{%for address in interfaces.addresses.matches %}
+{% if address.split(" ")[0] == ansible_host%}
+{% if interfaces.name.matches.0 is defined and interfaces.name.matches.0 != None %}
+  name: {{interfaces.name.matches.0}}
+{% endif %}
+  ip: {{address.split(" ")[0]}}
+  mask: {{address.split(" ")[1]}}
+{% if interfaces.description.matches[0] is defined and interfaces.description.matches[0] != None %}
+  description: {{interfaces.description.matches[0] |regex_escape() }}
+{% endif %}
+{% if interfaces.vrf.matches[0] is defined and interfaces.vrf.matches[0] != None %}
+  vrf: {{interfaces.vrf.matches[0]}}
+{% endif %}
+{% endif %}
+{%endfor%}
+{% endfor %}
+{% endif %}
+
+{%if ansible_net_vlan is defined and ansible_net_vlan != None %}
+### vlan ###
+vlans:
+{% for vlan in ansible_net_vlan%}
+  - id: {{vlan.matches.0}}
+    name:  {{vlan.matches.1}}
+{% endfor %}
+{% endif %}
+
+{%if ansible_net_vrf is defined and ansible_net_vrf != None %}
+### vrf ###
+vrf:
+{% for vrf in ansible_net_vrf%}
+{% if vrf.name.matches.0 is defined and vrf.name.matches.0 != None %}
+  - name: {{vrf.name.matches.0}}
+{% endif %}
+{% if vrf.rd.matches.0 is defined and vrf.rd.matches.0 != None %}
+    rd: {{vrf.rd.matches.0}}
+{% endif %}
+{% if vrf.families is defined and vrf.families != None %}
+    families: [{%for family in vrf.families %}'{{family.matches}}'{% if not loop.last %},{% endif %}{%endfor%}]
+{% endif %}
+{%endfor%}
+{% endif %}
+
+
+{% if ansible_net_interfaces is defined and ansible_net_interfaces != None %}
+### interfaces ###
+interfaces:
+{% for interfaces in ansible_net_interfaces%}
+{% if interfaces.name.matches[0] is defined and interfaces.name.matches[0] != None %}
+  - interface: {{interfaces.name.matches.0}}
+{% endif %}
+{% if interfaces.description.matches[0] is defined and interfaces.description.matches[0] != None %}
+    description: {{interfaces.description.matches[0] |regex_escape() }}
+{% endif %}
+{% if interfaces.vrf.matches[0] is defined and interfaces.vrf.matches[0] != None %}
+    vrf: {{interfaces.vrf.matches[0]}}
+{% endif %}
+{% if interfaces.mtu.matches[0] is defined and interfaces.mtu.matches[0] != None %}
+    mtu: {{interfaces.mtu.matches[0]}}
+{% endif %}
+{% if interfaces.addresses.matches[0] is defined and interfaces.addresses.matches[0] != None %}
+    addresses:
+{%for address in interfaces.addresses.matches %}
+      - ip: {{address}}
+{%endfor%}
+{% endif %}
+{% if interfaces.accessgroup.matches[0] is defined and interfaces.accessgroup.matches[0] != None %}
+    access-group: {{interfaces.accessgroup.matches[0]}}
+{% endif %}
+{% if interfaces.nat.matches[0] is defined and interfaces.nat.matches[0] != None %}
+    nat: {{interfaces.nat.matches[0]}}
+{% endif %}
+{% if interfaces.shutdown.matches[0] is defined and interfaces.shutdown.matches[0] != None %}
+    shutdown: yes
+{% endif %}
+{% if interfaces.vlan.matches[0] is defined and interfaces.vlan.matches[0] != None %}
+    encapsulation: {{interfaces.vlan.matches[0]}}
+{% endif %}
+{% if interfaces.channelgroup.matches[0] is defined and interfaces.channelgroup.matches[0] != None %}
+    channel-group: {{interfaces.channelgroup.matches[0]}}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{%if ansible_net_ACL is defined and ansible_net_ACL != None %}
+### ACL ###
+ACL:
+{% for ACL in ansible_net_ACL%}
+  - name: {{ACL.matches.1|trim}}
+    type: {{ACL.matches.0|trim}}
+    rules:
+{%for rule in ACL.matches.2.split('\n')%}
+{%if rule|trim != '' and ( rule|trim | regex_search("^permit") or  rule|trim | regex_search("^deny")) %}
+      - {{rule|trim}}
+{%endif%}
+{%endfor%}
+{%endfor%}
+{% endif %}
