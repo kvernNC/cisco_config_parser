@@ -1,3 +1,10 @@
 ---
-hostname: "{{ios_hostname.matches}}"
-version: "{{ios_major_version.matches}}"
+hostname: "{{ios_hostname.matches.0}}"
+version: "{{ios_major_version.matches.0}}"
+{%if ios_snmp_community is defined%}
+snmp_community:
+{%for community in ios_snmp_community%}
+  - name: {{community.matches.0}}
+    access: {{community.matches.1}}
+{%endfor%}
+{%endif%}

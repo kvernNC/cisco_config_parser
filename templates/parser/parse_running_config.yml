@@ -34,3 +34,82 @@
     regex: "!\\naccess-list ([^!]+)"
   register: ios_numbered_acl
   export: yes
+
+#### SNMP ####
+
+- name: match sections
+  pattern_match:
+    regex: "snmp-server community (\\S+) (RO|RW)"
+    match_all: yes
+  register: ios_snmp_community
+  export: yes
+
+### line ####
+- name: capture line 0 subsection
+  pattern_match:
+    regex: "(^line [^!]+\n!)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: line_subset
+  export: yes
+
+
+#### AAA ####
+- name: capture aaa global config
+  pattern_match:
+    regex: "^aaa (?!group)[^\\n]+" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ios_aaa_global
+  export: no
+
+- name: capture radius-server global config
+  pattern_match:
+    regex: "^(radius-server [^\\n]+)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ios_radiusserver_global
+  export: no
+
+- name: capture ip radius global config
+  pattern_match:
+    regex: "^(ip radius [^\\n]+)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ios_ipradius
+  export: yes
+
+- name: capture ip tacacs global config
+  pattern_match:
+    regex: "^(ip tacacs [^\\n]+)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ios_iptacacs
+  export: no
+
+- name: capture aaa group server subsection
+  pattern_match:
+    regex: "(^aaa group server [^!]+\n!)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ios_aaa_group_subset
+  export: no
+
+- name: match aaa group
+  pattern_group:
+    - name: match name
+      pattern_match:
+        regex: "(?:aaa group server tacacs\\+ |aaa group server radius )([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: name
+
+    - name: match config
+      pattern_match:
+        regex: "(?:aaa group server tacacs\\+ |aaa group server radius )(?:\\S+)([^!]+)"
+        content: "{{ item.matches  }}"
+      register: config
+
+    - name: match servers
+      pattern_match:
+        regex: "server-private ([^\n]+)"
+        content: "{{ item.matches  }}"
+        match_all: yes
+      register: servers
+
+  loop: "{{ ios_aaa_group_subset }}"
+  register: ios_aaa_groups
+  export: yes

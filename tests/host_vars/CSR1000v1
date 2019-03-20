@@ -1,3 +1,10 @@
 ---
-hostname: "[u'CSR1000v1']"
-version: "[u'15.5']"
+hostname: "CSR1000v1"
+version: "15.5"
+snmp_community:
+  - name: public
+    access: RO
+  - name: private
+    access: RW
+  - name: cisco
+    access: RO
