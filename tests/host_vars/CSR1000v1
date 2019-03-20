@@ -8,3 +8,30 @@ snmp_community:
     access: RW
   - name: cisco
     access: RO
+ACL:
+  - number: 1
+    rule:
+    - deny   any
+  - number: 102
+    rule:
+    - permit tcp any host 192.168.1.100 eq ftp
+    - permit tcp any host 192.168.1.100 eq ftp-data established
+    - permit tcp any any eq www
+    - permit tcp any any eq telnet
+    - permit tcp any any eq smtp
+    - permit tcp any any eq pop3
+    - permit tcp any any eq ftp
+    - permit tcp any any eq ftp-data
+  - number: 2
+    rule:
+    - permit any
+  - number: 2000
+    rule:
+    - permit tcp any host 2.2.2.1 eq www
+    - permit tcp any host 2.2.2.2 eq 443
+    - permit tcp any host 2.2.2.3 eq domain
+    - permit tcp any host 2.2.2.4 eq domain
+    - permit tcp any host 2.2.2.5 eq ftp-data
+    - permit tcp any host 2.2.2.6 eq ftp
+    - permit tcp any 3.3.3.0 0.0.0.255 eq smtp
+    - permit tcp any 3.3.3.0 0.0.0.255 eq pop3

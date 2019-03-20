@@ -8,3 +8,15 @@ snmp_community:
     access: {{community.matches.1}}
 {%endfor%}
 {%endif%}
+{%if ios_numbered_acl is defined%}
+ACL:
+{% for number in ios_numbered_acl|map(attribute='matches.0')|unique|list|sort%}
+  - number: {{number}}
+    rule:
+{%for acl in ios_numbered_acl%}
+{%if acl.matches.0 == number%}
+    - {{acl.matches.1}}
+{%endif%}
+{%endfor%}
+{%endfor%}
+{%endif%}

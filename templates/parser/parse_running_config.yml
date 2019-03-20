@@ -31,7 +31,8 @@
 
 - name: match numbered standard ACL
   pattern_match:
-    regex: "!\\naccess-list ([^!]+)"
+    regex: "\\naccess-list (\\d+) ([^\\n]+)"
+    match_all: yes
   register: ios_numbered_acl
   export: yes
 
