@@ -1,31 +1,41 @@
-Role Name
+cisco_config_parser
 =========
 
-A brief description of the role goes here.
+A role using ansible-network.network-engine's command_parser to generate host_vars of ios device from the running-config.
+
+A more complete and lighter alternative to ios_facts.
 
 Requirements
 ------------
+privilege 15 on the device to be able to run showr
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
-
-Role Variables
+vars retrieved
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- hostname
+- major version
+- aaa
+- vlan
+- vrf
+- interfaces
+- line
+- ... (more to come)
+(check my example in tests/host_vars/CSR1000v1)
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Ansible-network.network-engine
 
-Example Playbook
+How to test it
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- git clone https://github.com/kvernNC/cisco_config_parser.git
+- cd cisco_config_parser/tests/
+- ansible-galaxy install -r roles/requirements.yml
+- edit inventory and group_vars for adding your device
+- ansible-playbook test.yml
+- check the result in host_vars
 
 License
 -------
@@ -35,6 +45,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
-# cisco_config_parser
-# cisco_config_parser
+Kvern, contact me via github.
