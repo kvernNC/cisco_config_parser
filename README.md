@@ -7,7 +7,7 @@ A more complete and lighter alternative to ios_facts.
 
 Requirements
 ------------
-privilege 15 on the device to be able to run showr
+Ssh and privilege 15 on the device to  retrieve the running-config.
 
 vars retrieved
 --------------
@@ -20,6 +20,7 @@ vars retrieved
 - interfaces
 - line
 - ... (more to come)
+
 (check my example in tests/host_vars/CSR1000v1)
 
 Dependencies
