@@ -7,7 +7,7 @@
 
 - name: match hostname
   pattern_match:
-    regex: "!\\nhostname ([^\\n]+)"
+    regex: "^hostname ([^\\n]+)"
   register: ios_hostname
   export: yes
 
@@ -17,30 +17,10 @@
   register: ios_major_version
   export: yes
 
-- name: match named standard ACL
-  pattern_match:
-    regex: "ip access-list standard ([^!]+)"
-  register: ios_standard_named_acl
-  export: yes
-
-- name: match named extended ACL
-  pattern_match:
-    regex: "ip access-list extended([^!]+)"
-  register: ios_extended_named_acl
-  export: yes
-
-- name: match numbered standard ACL
-  pattern_match:
-    regex: "\\naccess-list (\\d+) ([^\\n]+)"
-    match_all: yes
-  register: ios_numbered_acl
-  export: yes
-
 #### SNMP ####
-
 - name: match sections
   pattern_match:
-    regex: "snmp-server community (\\S+) (RO|RW)"
+    regex: "^snmp-server community (\\S+) (RO|RW)"
     match_all: yes
   register: ios_snmp_community
   export: yes
@@ -48,9 +28,34 @@
 ### line ####
 - name: capture line 0 subsection
   pattern_match:
-    regex: "(^line [^!]+\n!)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    regex: "(^line [^!]+?)(?=line|!)" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
     match_all: yes
-  register: line_subset
+  register: ios_line_subset
+  export: no
+
+- name: match line
+  pattern_group:
+    - name: match type
+      pattern_match:
+        regex: "line (\\w+)"
+        content: "{{ item.matches  }}"
+      register: type
+
+    - name: match id
+      pattern_match:
+        regex: "line \\w+ ([^\n]+)"
+        content: "{{ item.matches  }}"
+      register: id
+
+    - name: match config
+      pattern_match:
+        regex: "^ ([^\n]+)"
+        content: "{{ item.matches  }}"
+        match_all: yes
+      register: config
+
+  loop: "{{ ios_line_subset }}"
+  register: ios_line
   export: yes
 
 
@@ -114,3 +119,45 @@
   loop: "{{ ios_aaa_group_subset }}"
   register: ios_aaa_groups
   export: yes
+
+#### named ACL ####
+- name: match numbered standard ACL
+  pattern_match:
+    regex: "^access-list (\\d+) ([^\\n]+)"
+    match_all: yes
+  register: ios_numbered_acl
+  export: yes
+
+- name: match named standard ACL
+  pattern_match:
+    regex: "(^ip access-list [^!]+?)(?=ip access-list|!)"
+    match_all: yes
+  register: ios_named_acl_section
+  export: no
+
+- name: match named acl
+  pattern_group:
+    - name: match type
+      pattern_match:
+        regex: "ip access-list (standard|extended)"
+        content: "{{ item.matches  }}"
+      register: type
+
+    - name: match name
+      pattern_match:
+        regex: "ip access-list (?:standard|extended) ([^\n]+)"
+        content: "{{ item.matches  }}"
+      register: name
+
+    - name: match rules
+      pattern_match:
+        regex: "(permit [^\n]+|deny [^\n]+)"
+        content: "{{ item.matches  }}"
+        match_all: yes
+      register: rules
+
+  loop: "{{ ios_named_acl_section }}"
+  register: ios_named_acl
+  export: yes
+
+#### ACL ####
