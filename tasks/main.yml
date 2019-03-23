@@ -1,7 +1,7 @@
 ---
 # tasks file for cisco_config_parser
 - block:
-  - name: run enable level commands
+  - name: run show running-config on device
     ios_command:
       authorize: yes
       commands:
@@ -17,9 +17,9 @@
     register: file_exists
     delegate_to: localhost
 
-- debug:
-    msg: "{{lookup('file','{{role_path}}/files/{{ inventory_hostname }}.ios')}}"
-  delegate_to: localhost
+# - debug:
+#     msg: "{{lookup('file','{{role_path}}/files/{{ inventory_hostname }}.ios')}}"
+#   delegate_to: localhost
 
 - name: Generate vars with parser
   command_parser:
