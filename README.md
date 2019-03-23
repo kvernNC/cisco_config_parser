@@ -38,6 +38,10 @@ How to test it
 - ansible-playbook test.yml
 - check the result in host_vars
 
+How to use it in your Playbook
+------------------------------
+As host_vars aren't dynamically read by ansible, you should run this role on independant playbook and then run your playbook without ios_facts.
+
 License
 -------
 
