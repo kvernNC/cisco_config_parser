@@ -89,3 +89,24 @@ line:
     type: vty
     config:
       - login local
+
+##### to fix ####
+
+
+### vrf ###
+vrf:
+  - name: Mgmt-intf
+    families: ['ipv4','ipv6']
+
+
+### interfaces ###
+interfaces:
+  - interface: GigabitEthernet1
+    addresses:
+      - ip: dhcp
+  - interface: GigabitEthernet2
+    shutdown: yes
+  - interface: GigabitEthernet3
+    shutdown: yes
+  - interface: GigabitEthernet4
+    shutdown: yes
