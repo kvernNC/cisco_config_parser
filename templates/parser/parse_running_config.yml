@@ -18,11 +18,18 @@
   export: yes
 
 #### SNMP ####
-- name: match sections
+- name: match snmp community
   pattern_match:
     regex: "^snmp-server community (\\S+) (RO|RW)"
     match_all: yes
   register: ios_snmp_community
+  export: yes
+
+- name: capture snmp-server subsection fully in oxidized show running_configuration
+  pattern_match:
+    regex: "\\\n(snmp-server [^!]+)"
+    match_all: yes
+  register: ansible_net_snmp_config
   export: yes
 
 ### line ####
