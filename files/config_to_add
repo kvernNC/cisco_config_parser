@@ -1,0 +1,145 @@
+!
+vrf definition CLIENT1
+ rd 1:1
+ !
+ address-family ipv4
+  route-target export 1:1
+  route-target import 1:1
+ exit-address-family
+!
+vrf definition CLIENT2
+ rd 2:2
+ !
+ address-family ipv4
+  route-target export 2:2
+  route-target import 2:2
+ exit-address-family
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+ ip ospf 1 area 0
+!
+!
+interface GigabitEthernet2.12
+ description CLIENT1
+ encapsulation dot1Q 12
+ vrf forwarding CLIENT1
+ ip address 192.168.12.2 255.255.255.0
+!
+interface GigabitEthernet2.21
+ encapsulation dot1Q 21
+ vrf forwarding CLIENT2
+ ip address 192.168.21.2 255.255.255.0
+!
+!
+router ospf 1
+ router-id 2.2.2.2
+!
+router bgp 64512
+ bgp router-id 2.2.2.2
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 4.4.4.4 remote-as 64512
+ neighbor 4.4.4.4 update-source Loopback0
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 4.4.4.4 activate
+  neighbor 4.4.4.4 send-community both
+ exit-address-family
+ !
+ address-family ipv4 vrf CLIENT1
+  redistribute connected
+  neighbor 192.168.12.3 remote-as 65000
+  neighbor 192.168.12.3 activate
+  neighbor 192.168.12.3 send-community both
+  neighbor 192.168.12.3 allowas-in
+  neighbor 192.168.12.3 route-map CLIENT1-FW-IN in
+  neighbor 192.168.12.3 route-map CLIENT1-FW-OUT out
+ exit-address-family
+ !
+ address-family ipv4 vrf CLIENT2
+  redistribute connected
+  neighbor 192.168.21.3 remote-as 65000
+  neighbor 192.168.21.3 activate
+  neighbor 192.168.21.3 send-community both
+  neighbor 192.168.21.3 allowas-in
+  neighbor 192.168.21.3 route-map FW-OUT out
+ exit-address-family
+!
+!
+route-map IN permit 10
+ set local-preference 10
+!
+route-map CLIENT1-FW-IN deny 10
+ match extcommunity CLIENT1-FILTER
+!
+route-map CLIENT1-FW-IN permit 100
+ set local-preference 20
+!
+route-map FW-OUT permit 10
+ set metric 100
+!
+route-map CLIENT1-FW-OUT permit 10
+ set metric 200
+ set extcommunity rt 64512:101 additive
+!
+#################
+################
+###############
+ip route vrf mgmt 0.0.0.0 0.0.0.0 10.248.16.1
+!
+router bgp 64512
+ template peer-policy RR
+  route-reflector-client
+  send-community both
+ exit-peer-policy
+ !
+ template peer-session RR
+  remote-as 64512
+  update-source Loopback0
+ exit-peer-session
+ !
+ bgp router-id 4.4.4.4
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 1.1.1.1 inherit peer-session RR
+ neighbor 2.2.2.2 inherit peer-session RR
+ neighbor 3.3.3.3 inherit peer-session RR
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 1.1.1.1 activate
+  neighbor 1.1.1.1 send-community extended
+  neighbor 1.1.1.1 inherit peer-policy RR
+  neighbor 2.2.2.2 activate
+  neighbor 2.2.2.2 send-community extended
+  neighbor 2.2.2.2 inherit peer-policy RR
+  neighbor 3.3.3.3 activate
+  neighbor 3.3.3.3 send-community extended
+  neighbor 3.3.3.3 inherit peer-policy RR
+ exit-address-family
+!
+!
+interface GigabitEthernet3
+ description cers PE1
+ ip address 192.168.14.4 255.255.255.0
+ ip ospf 1 area 0
+ duplex auto
+ speed auto
+ media-type rj45
+ mpls ip
+!
+interface GigabitEthernet4
+ description vers PE2
+ ip address 192.168.24.4 255.255.255.0
+ ip ospf 1 area 0
+ duplex auto
+ speed auto
+ media-type rj45
+ mpls ip
+!
