@@ -160,4 +160,134 @@
   register: ios_named_acl
   export: yes
 
-#### ACL ####
+#### vlan ####
+- name: capture VLAN in oxidized show running_configuration
+  pattern_match:
+    regex: "\\\nvlan (\\d+)\\\n name ([^\\\n]+)"
+    match_all: yes
+  register: ansible_net_vlan
+  export: yes
+
+#### vrf ####
+- name: capture vrf subsection per vrf in oxidized show running_configuration
+  pattern_match:
+    regex: "!\nip vrf|vrf definition (.*)" #regex: "\\\nip vrf|\\nvrf definition ([^!]+)"
+    match_all: yes
+    match_greedy: yes
+    match_until: "\\n!"
+  register: ansible_net_vrf_subset
+  export: no
+
+- name: match interface values
+  pattern_group:
+    - name: match name
+      pattern_match:
+        regex: "(?:ip vrf |vrf definition )([^\\\n]+)"
+        content: "{{ item  }}"
+      register: name
+
+    - name: match rd
+      pattern_match:
+        regex: "rd ([^\\\n]+)"
+        content: "{{ item  }}"
+      register: rd
+
+    - name: match family
+      pattern_match:
+        regex: "address-family ([^\\\n]+)"
+        content: "{{ item }}"
+        match_all: yes
+      register: families
+
+  loop: "{{ ansible_net_vrf_subset }}"
+  register: ansible_net_vrf
+  export: yes
+
+### interfaces ####
+- name: capture interface subsection per interface in oxidized show running_configuration
+  pattern_match:
+    regex: "!\\\n(interface [^!]+)\\\n" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
+    match_all: yes
+  register: ansible_net_interfaces_subset
+  export: no
+
+- name: match interface values
+  pattern_group:
+    - name: match name
+      pattern_match:
+        regex: "interface ([^\\\n]+)"
+        content: "{{ item.matches }}"
+      register: name
+
+    - name: match description
+      pattern_match:
+        regex: "description ([^\\\n]+)"
+        content: "{{ item.matches }}"
+      register: description
+
+    - name: match vrf
+      pattern_match:
+        regex: "vrf forwarding ([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: vrf
+
+    - name: match mtu
+      pattern_match:
+        regex: "ip mtu ([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: mtu
+
+    - name: match ip address
+      pattern_match:
+        regex: "ip address ([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: addresses
+
+    - name: match ip access-group
+      pattern_match:
+        regex: "ip access-group ([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: accessgroup
+
+    - name: match ip nat
+      pattern_match:
+        regex: "ip nat ([^\\\n]+)"
+        content: "{{ item.matches  }}"
+      register: nat
+
+    - name: match shutdown
+      pattern_match:
+        regex: "\\n (shutdown)\\n"
+        content: "{{ item.matches  }}"
+      register: shutdown
+
+    - name: match encapsulation
+      pattern_match:
+        regex: "encapsulation dot1Q ([^\\\n]+)"
+        content: "{{ item.matches }}"
+      register: vlan
+
+    - name: match channel-group
+      pattern_match:
+        regex: "channel-group (\\d+) mode (\\w+)" #regex: "channel-group (\\d+) mode \\w+\\n"
+        content: "{{ item.matches }}"
+      register: channelgroup
+
+  loop: "{{ ansible_net_interfaces_subset }}"
+  register: ansible_net_interfaces
+  export: yes
+
+#### routing ####
+- name: capture router subsection per router in oxidized show running_configuration
+  pattern_match:
+    regex: "\\\n(router [^!]+)"
+    match_all: yes
+  register: ansible_net_router
+  export: yes
+
+- name: capture static route subsection per route in oxidized show running_configuration
+  pattern_match:
+    regex: "\\\n(ip route[^\\\n]+)"
+    match_all: yes
+  register: ansible_net_static_route
+  export: yes
