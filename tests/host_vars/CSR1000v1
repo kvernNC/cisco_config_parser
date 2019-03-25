@@ -95,18 +95,44 @@ line:
 
 ### vrf ###
 vrf:
+  - name: CLIENT1
+    rd: 1:1
+    families: ['ipv4']
+  - name: CLIENT2
+    rd: 2:2
+    families: ['ipv4']
   - name: Mgmt-intf
     families: ['ipv4','ipv6']
 
 
 ### interfaces ###
 interfaces:
+  - interface: Loopback0
+    addresses:
+      - ip: 2.2.2.2 255.255.255.255
   - interface: GigabitEthernet1
     addresses:
       - ip: dhcp
   - interface: GigabitEthernet2
     shutdown: yes
+  - interface: GigabitEthernet2.12
+    description: CLIENT1
+    vrf: CLIENT1
+    addresses:
+      - ip: 192.168.12.2 255.255.255.0
+    encapsulation: 12
+  - interface: GigabitEthernet2.21
+    vrf: CLIENT2
+    addresses:
+      - ip: 192.168.21.2 255.255.255.0
+    encapsulation: 21
   - interface: GigabitEthernet3
+    description: cers\ PE1
+    addresses:
+      - ip: 192.168.14.4 255.255.255.0
     shutdown: yes
   - interface: GigabitEthernet4
+    description: vers\ PE2
+    addresses:
+      - ip: 192.168.24.4 255.255.255.0
     shutdown: yes

@@ -25,11 +25,11 @@
   register: ios_snmp_community
   export: yes
 
-- name: capture snmp-server subsection fully in oxidized show running_configuration
+- name: capture snmp-server subsection fully
   pattern_match:
     regex: "\\\n(snmp-server [^!]+)"
     match_all: yes
-  register: ansible_net_snmp_config
+  register: ios_net_snmp_config
   export: yes
 
 ### line ####
@@ -64,7 +64,6 @@
   loop: "{{ ios_line_subset }}"
   register: ios_line
   export: yes
-
 
 #### AAA ####
 - name: capture aaa global config
@@ -168,21 +167,21 @@
   export: yes
 
 #### vlan ####
-- name: capture VLAN in oxidized show running_configuration
+- name: capture VLAN list (switch only)
   pattern_match:
     regex: "\\\nvlan (\\d+)\\\n name ([^\\\n]+)"
     match_all: yes
-  register: ansible_net_vlan
+  register: ios_net_vlan
   export: yes
 
 #### vrf ####
-- name: capture vrf subsection per vrf in oxidized show running_configuration
+- name: capture vrf subsection per vrf
   pattern_match:
     regex: "!\nip vrf|vrf definition (.*)" #regex: "\\\nip vrf|\\nvrf definition ([^!]+)"
     match_all: yes
     match_greedy: yes
     match_until: "\\n!"
-  register: ansible_net_vrf_subset
+  register: ios_net_vrf_subset
   export: no
 
 - name: match interface values
@@ -206,8 +205,8 @@
         match_all: yes
       register: families
 
-  loop: "{{ ansible_net_vrf_subset }}"
-  register: ansible_net_vrf
+  loop: "{{ ios_net_vrf_subset }}"
+  register: ios_net_vrf
   export: yes
 
 ### interfaces ####
@@ -215,7 +214,7 @@
   pattern_match:
     regex: "!\\\n(interface [^!]+)\\\n" #    regex: "\\\ninterface ([^\\\n]+)([^!]+)"
     match_all: yes
-  register: ansible_net_interfaces_subset
+  register: ios_net_interfaces_subset
   export: no
 
 - name: match interface values
@@ -280,21 +279,21 @@
         content: "{{ item.matches }}"
       register: channelgroup
 
-  loop: "{{ ansible_net_interfaces_subset }}"
-  register: ansible_net_interfaces
+  loop: "{{ ios_net_interfaces_subset }}"
+  register: ios_net_interfaces
   export: yes
 
 #### routing ####
 - name: capture router subsection per router in oxidized show running_configuration
   pattern_match:
-    regex: "\\\n(router [^!]+)"
+    regex: "(^router [^!]+?)(?=router\n|!)"
     match_all: yes
-  register: ansible_net_router
+  register: ios_net_router
   export: yes
 
 - name: capture static route subsection per route in oxidized show running_configuration
   pattern_match:
-    regex: "\\\n(ip route[^\\\n]+)"
+    regex: "\\\nip route ([^\\\n]+)"
     match_all: yes
-  register: ansible_net_static_route
+  register: ios_net_static_route
   export: yes

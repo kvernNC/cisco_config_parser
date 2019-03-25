@@ -44,19 +44,19 @@ line:
 
 ##### to fix ####
 
-{%if ansible_net_vlan is defined and ansible_net_vlan != None %}
+{%if ios_net_vlan is defined and ios_net_vlan != None %}
 ### vlan ###
 vlans:
-{% for vlan in ansible_net_vlan%}
+{% for vlan in ios_net_vlan%}
   - id: {{vlan.matches.0}}
     name:  {{vlan.matches.1}}
 {% endfor %}
 {% endif %}
 
-{%if ansible_net_vrf is defined and ansible_net_vrf != None %}
+{%if ios_net_vrf is defined and ios_net_vrf != None %}
 ### vrf ###
 vrf:
-{% for vrf in ansible_net_vrf%}
+{% for vrf in ios_net_vrf%}
 {% if vrf.name.matches.0 is defined and vrf.name.matches.0 != None %}
   - name: {{vrf.name.matches.0}}
 {% endif %}
@@ -70,10 +70,10 @@ vrf:
 {% endif %}
 
 
-{% if ansible_net_interfaces is defined and ansible_net_interfaces != None %}
+{% if ios_net_interfaces is defined and ios_net_interfaces != None %}
 ### interfaces ###
 interfaces:
-{% for interfaces in ansible_net_interfaces%}
+{% for interfaces in ios_net_interfaces%}
 {% if interfaces.name.matches[0] is defined and interfaces.name.matches[0] != None %}
   - interface: {{interfaces.name.matches.0}}
 {% endif %}
